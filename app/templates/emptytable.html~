@@ -1,0 +1,221 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+   <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+   <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <meta charset="UTF-8">
+  <title>成绩查询</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+      * {
+          margin: 0;
+          padding: 0;
+          -webkit-box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          box-sizing: border-box;
+      }
+      body {
+          background: #2d2c41;
+          font-family: Arial, Helvetica, Sans-serif, Verdana, Tahoma;
+      }
+      ul {
+          list-style-type: none;
+      }
+      a {
+          color: #b63b4d;
+          text-decoration: none;
+      }
+      h1 {
+          color: #FFF;
+          font-size: 24px;
+          font-weight: 400;
+          text-align: left;
+          margin-top: 80px;
+      }
+      h1 a {
+          color: #c12c42;
+          font-size: 16px;
+      }
+      .container {
+		padding-left:20px;  
+		padding-right:0px;    
+		padding-top: 20px;
+      }
+      .row{
+		margin-right: :0px;  
+		margin-left:10px;    
+      }
+      .accordion {
+          width: 100%;
+          max-width: 360px;
+          background: #FFF;
+          -webkit-border-radius: 4px;
+          -moz-border-radius: 4px;
+          border-radius: 4px;
+          position:absolute;
+          left:0px;
+          right:0px;
+          top:300px;
+          margin:auto;
+      }
+      .accordion .link {
+          cursor: pointer;
+          display: block;
+          padding: 15px 15px 15px 15px;
+          color: #4D4D4D;
+          font-size: 14px;
+          font-weight: 700;
+          border-bottom: 1px solid #CCC;
+          position: relative;
+          right: 0px;
+          -webkit-transition: all 0.4s ease;
+          -o-transition: all 0.4s ease;
+          transition: all 0.4s ease;
+      }
+      .accordion .gpa {
+          cursor: pointer;
+          display: block;
+          padding: 15px 15px 15px 15px;
+          color: #4D4D4D;
+          font-size: 14px;
+          font-weight: 700;
+          border-top: 2px solid #CCC;
+          position: relative;
+          right: 0px;
+          -webkit-transition: all 0.4s ease;
+          -o-transition: all 0.4s ease;
+          transition: all 0.4s ease;
+      }
+        .accordion .link2 {
+          position: absolute;
+          left: 280px;
+      }
+       .accordion .link3 {
+          position: relative;
+          left: 40px;
+          font-size: 20px;
+      } 
+      .accordion .link4 {
+          position: relative;
+          left: 195px;
+          font-size: 20px;
+      }
+      .accordion .title {
+          border-bottom: 2px solid #CCC;
+          position: relative;
+          left: 0px;
+      }
+      .accordion .det {
+          color: #FFFFFF;
+          position: relative;
+          left: 15px;
+          font-size: 15px;
+      }
+      .accordion li:last-child .link {
+          border-bottom: 0;
+      }
+      .accordion li i {
+          position: absolute;
+          top: 16px;
+          left: 12px;
+          font-size: 18px;
+          color: #595959;
+          -webkit-transition: all 0.4s ease;
+          -o-transition: all 0.4s ease;
+          transition: all 0.4s ease;
+      }
+      .accordion li i.fa-chevron-down {
+          right: 12px;
+          left: auto;
+          font-size: 16px;
+      }
+      
+      .accordion li.open .link {
+          color: #b63b4d;
+      }
+      .accordion li.open i {
+          color: #b63b4d;
+      }
+      .accordion li.open i.fa-chevron-down {
+          -webkit-transform: rotate(180deg);
+          -ms-transform: rotate(180deg);
+          -o-transform: rotate(180deg);
+          transform: rotate(180deg);
+      }
+      .submenu {
+          display: none;
+          background: #444359;
+          font-size: 14px;
+      }
+      .submenu li {
+          border-bottom: 1px solid #4b4a5e;
+          padding: 2px 5px 2px 5px;
+      }
+      .submenu a {
+          display: block;
+          text-decoration: none;
+          color: #d9d9d9;
+          padding: 12px;
+          padding-left: 42px;
+          -webkit-transition: all 0.25s ease;
+          -o-transition: all 0.25s ease;
+          transition: all 0.25s ease;
+      }
+      .submenu span{
+		  color: #FFFFFF;
+          position: relative;
+          left: 10px;
+          font-size: 15px;
+          padding: 5px 5px 5px 5px;
+      }
+      .submenu a:hover {
+          background: #b63b4d;
+          color: #FFF;
+      }
+  </style>
+</head>
+<body>
+	<div class="container">
+	<div class="row">
+	<div class="col-md-4">
+	{{ wtf.quick_form(form) }}
+</div>
+</div>
+</div>
+
+	<ul id="accordion" class="accordion">
+	<li>
+	<div class="title"><span class="link3" >课程名称</span><span class="link4">成绩</span></div>
+	</li>
+    </ul>
+  <script src="http://amals.org/zb_system/script/common.js"></script>
+  <script>
+  $(function() {
+        var Accordion = function(el, multiple) {
+		this.el = el || {};
+        this.multiple = multiple || false;
+    
+        var links = this.el.find('.link');
+
+        links.on('click', {el: this.el, multiple: this.multiple}, this.dropdown)
+        }
+        
+        Accordion.prototype.dropdown = function(e) {
+        var $el = e.data.el;
+        $this = $(this),
+        $next = $this.next();
+        
+        $next.slideToggle();
+        $this.parent().toggleClass('open');
+        
+        if (!e.data.multiple) {
+        $el.find('.submenu').not($next).slideUp().parent().removeClass('open');
+        };
+        }
+        var accordion = new Accordion($('#accordion'), false);
+    });
+  </script>
+</body>
+</html>
