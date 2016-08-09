@@ -164,7 +164,7 @@ class CJScrap(object):
 
 
 if __name__ == '__main__':
-    mycj = CJScrap('1415110613', '111111')
+    mycj = CJScrap('14151106132', 'password')
     gemycj = mycj.getScore()
 
 
