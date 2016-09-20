@@ -6,4 +6,4 @@
 位于requirements.txt
 ###3）flask Demo  
 *http://frankpay.top  
-*目前支持广东财经大学教务系统成绩查询
+*目前支持 广东财经大学 教务系统成绩查询
