@@ -9,7 +9,6 @@ from .. import spider
 from ..models import Score
 import time
 
-
 @main.route('/', methods=['GET', 'POST'])
 def index():
     postform = PostForm()
