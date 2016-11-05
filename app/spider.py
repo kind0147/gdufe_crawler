@@ -12,7 +12,7 @@ class CJScrap(object):
         self.studentID = studentID
         self.password = password
         #进入MySQL，并选择数据库student
-        self.conn = pymysql.connect(host='127.0.0.1', user='root', passwd='516211', db='mysql', charset='utf8mb4')
+        self.conn = pymysql.connect(host='127.0.0.1', user='root', passwd='password', db='mysql', charset='utf8mb4')
         self.cur = self.conn.cursor()
         self.cur.execute('USE student')
 
@@ -25,147 +25,101 @@ class CJScrap(object):
                 'Cache-Control':'max-age=0',
                 'Connection':'keep-alive',
                 'Content-Type':'application/x-www-form-urlencoded',
-                'Cookie':'_gscu_750909037=15074682dsiqpt59; iPlanetDirectoryPro=AQIC5wM2LY4Sfcy7allyeg8bTwGbxs56kCYwGNYhKYMOT3k%3D%40AAJTSQACMDE%3D%23',
-                'Host':'jwxt2.gdufe.edu.cn:8080',
-                'Origin':'jwxt2.gdufe.edu.cn:8080',
+                'Cookie':'_gscu_750909037=15074682dsiqpt59; JSESSIONID=F9D8CEF536AD5F2A3EDFDA5B90415888',
+                'Host':'jwxt.gdufe.edu.cn',
+                'Origin':'http://jwxt.gdufe.edu.cn',
                 'Referer':Referer,
                 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36'
             }
         return headers
     def getScore(self):
         #获取URL中的干扰myString,如:(S(tu2ev555t3hct445ra3v2p55))
-        mainURL = 'http://jwxt2.gdufe.edu.cn:8080'
-        pageURL = mainURL + '/default6.aspx'
-        headers = self.getHeaders(pageURL)
+        mainURL = 'http://jwxt.gdufe.edu.cn'
+        pageURL = mainURL + '/jsxsd'
         s = requests.Session()
-        response = s.get(pageURL, headers=headers)
-        #print response.url
-        pattern = re.compile(r"/")
-        myString = pattern.split(response.url)[3]
-        #print myString
-        #获得postdata中的__VIEWSTATE,__EVENTVALIDATION
-        bsObj = BeautifulSoup(response.text, "lxml")
-        __VIEWSTATE = bsObj.find(id="__VIEWSTATE")["value"]
-        __EVENTVALIDATION = bsObj.find(id="__EVENTVALIDATION")["value"]
+        headers = self.getHeaders(pageURL) 
         #构造登录教务系统用的loginPostData字典
         loginPostData = {
-                    '__VIEWSTATE':__VIEWSTATE,
-                    '__EVENTVALIDATION':__EVENTVALIDATION,
-                    'tname':'',
-                    'tbtns':'',
-                    'tnameXw':'yhdl',
-                    'tbtnsXw':'yhdl|xwxsdl',
-                    'txtYhm':self.studentID,
-                    'txtXm':'111111',
-                    'txtMm':self.password,
-                    'rblJs':u'学生'.encode('gb2312'),
-                    'btnDl':u'登 录'.encode('gb2312')
+                    'USERNAME':self.studentID,
+                    'PASSWORD':self.password,
                 }
         #登录进入主界面
-        loginURL = mainURL + '/' + myString + '/default6.aspx'
-        response = s.post(loginURL, data=loginPostData, headers=headers)
-        #print response.url
-        #获得学生名称studentName
-        bsObj = BeautifulSoup(response.text, "lxml")
-        studentInfo = bsObj.find(id="xhxm").string
-        studentInfo = studentInfo.replace(' ','')
-        studentInfo = studentInfo.replace(self.studentID,'')
-        studentName = studentInfo.replace(u'同学','')
-        #将utf-8编码的姓名转变为gb2312编码
-        urlstudentName = studentName.encode('gb2312')         
-        #进入查询成绩页面
-        headers = self.getHeaders(response.url)
-        params = {'xh':self.studentID, 'xm':urlstudentName, 'gnmkdm':'N121605'}
-        cjURL = mainURL + '/' + myString + '/xscjcx_dq.aspx?'
-        r = s.get(cjURL, params=params, headers=headers)
-        #print r.url
-        #获得查询成绩页面的__VIEWSTATE,__EVENTVALIDATION
-        bsObj = BeautifulSoup(r.text, "lxml")
-        __VIEWSTATE = bsObj.find(id="__VIEWSTATE")["value"]
-        __EVENTVALIDATION = bsObj.find(id="__EVENTVALIDATION")["value"]
-        #更新headers
-        headers = self.getHeaders(cjURL)
-        #构造查询所有成绩的post表单的字典
-        cjPostData = {
-                    '__EVENTTARGET':'',
-                    '__EVENTARGUMENT':'',
-                    '__LASTFOCUS':'',
-                    '__VIEWSTATE':__VIEWSTATE,
-                    '__EVENTVALIDATION':__EVENTVALIDATION,
-                    'ddlxn':u'全部'.encode('gb2312'),     #全部
-                    'ddlxq':u'全部'.encode('gb2312'),     #全部
-                    'btnCx':u' 查  询 '.encode('gb2312')  #查询
+        loginURL = mainURL + '/jsxsd/xk/LoginToXk'
+        response = s.post("http://jwxt.gdufe.edu.cn/jsxsd/xk/LoginToXkLdap", data=loginPostData, headers=headers)
+        print response
+        
+        mainpageURL = pageURL + '/framework/xsMain.jsp'
+        headers = self.getHeaders(mainpageURL)
+        scorepageURL = pageURL + '/kscj/cjcx_query?Ves632DSdyV=NEW_XSD_XJCJ'
+        mainPAGE = s.get(scorepageURL)
+        print mainPAGE
+
+        headers = self.getHeaders(scorepageURL)
+        checkFORM = {
+                'kksj':'',
+                'kcxz':'',
+                'kcmc':'',
+                'fxkc':'0',
+                'xsfs':'all'
                 }
-        #获得包含所有成绩的cjResponse
-        cj_all_URL = mainURL + '/' + myString + '/xscjcx_dq.aspx'
-        xm = ''
-        for item in studentName:
-            xm = xm + "%u" + "%x"%ord(item)
-        #print 'xm:',xm
-        payload = {'xh':self.studentID,'xm':xm,'gnmkdm':'N121605'}
-        cjResponse = s.post(cj_all_URL, params=payload, data=cjPostData, headers=headers)
+        checkscoreURL = pageURL + '/kscj/cjcx_list'
+        cjResponse = s.post(checkscoreURL, data=checkFORM, headers=headers)
         bsObj = BeautifulSoup(cjResponse.text, "lxml")
-        count = 0
-        for tag in bsObj.form.table.next_sibling.next_sibling.find_all("td"):
-            if count > 16:
-                if count%17==0:
-                    #学年
-                    year = tag.string
-                        
-                elif count%17==1:
-                    #学期
-                    term = tag.string
+        dataList = bsObj.find(id='dataList')
+        #print dataList.text
+        score_tank = []
+        scoreInfo = {
+                'studentID':'',
+                'year':'',
+                'term':'',
+                'code':'',
+                'title':'',
+                'credit':'',
+                'cour_character':'',
+                'fin_score':'',
+                'cour_attribute':''
+                }
+        for tag in dataList.find_all('tr'):
+            if not tag.th:
+                yearterm = tag.find_all('td')[1].string.split('-')
+                year = yearterm[0] + '-' + yearterm[1]
+                scoreInfo['studentID'] = self.studentID
+                scoreInfo['year'] = year
 
-                elif count%17==2:
-                    #课程代码
-                    code = tag.string
+                term = yearterm[2]
+                scoreInfo['term'] = term
 
-                elif count%17==3:
-                    #课程名称
-                    title = tag.string
+                code = tag.find_all('td')[2].string
+                scoreInfo['code'] = code
 
-                elif count%17==4:
-                    #课程性质
-                    cour_character = tag.string
+                title = tag.find_all('td')[3].string
+                scoreInfo['title'] = title
 
-                elif count%17==6:
-                    #学分
-                    credit = tag.string
+                fin_score = tag.find_all('td')[4].a.string
+                scoreInfo['fin_score'] = fin_score
 
-                elif count%17==7:
-                    #平时成绩
-                    mid_score = tag.string
-                    if mid_score.isspace():
-                        mid_score = '0'
+                credit = tag.find_all('td')[5].string
+                scoreInfo['credit'] = credit
 
-                elif count%17==9:
-                    #期末成绩
-                    end_score = tag.string
+                cour_character = tag.find_all('td')[8].string
+                scoreInfo['cour_character'] = cour_character
 
-                elif count%17==11:
-                    #总成绩
-                    fin_score = tag.string
+                cour_attribute = tag.find_all('td')[9].string
+                scoreInfo['cour_attribute'] = cour_attribute
 
-                elif count%17==14:
-                    #开课学院
-                    college = tag.string
-                    self.cur.execute("INSERT INTO scorepages (studentid, year, term, code, title, cour_character, credit, mid_score, end_score, fin_score, college) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s ,%s)",(self.studentID, year, term, code, title, cour_character, float(credit), float(mid_score), float(end_score), float(fin_score), college))
-                    self.conn.commit()
-                    pass
-            count = count + 1
-                
-#绩点计算
-        #self.cur.execute("SELECT ( ( SUM(credit * fin_score) / SUM(credit) ) / 10.0 ) - 5.0 FROM pages")
-        #print "总绩点：" + str(self.cur.fetchone()[0])
+                score_tank.append(scoreInfo.copy())
+                self.cur.execute("INSERT INTO scorepages (studentid, year, term, code, title, cour_character, credit, fin_score, cour_attribute) VALUES (%s, %s, %s, %s, %s, %s, %s, %s ,%s)",(self.studentID, year, term, code, title, cour_character, float(credit), float(fin_score), cour_attribute))
+                self.conn.commit()
+ 
 
         self.cur.close()
         self.conn.close()
-        return True
-
+        return score_tank   
 
 if __name__ == '__main__':
-    mycj = CJScrap('14151106132', 'password')
+    mycj = CJScrap('username', 'password')
     gemycj = mycj.getScore()
+    print gemycj[0]
 
 
 
