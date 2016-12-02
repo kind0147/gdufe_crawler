@@ -17,7 +17,7 @@ class CJScrap(object):
         self.cur.execute('USE student')
 
         #获得headers，Referer参数为上一页面的url
-    def getHeaders(self, Referer):
+    def getHeaders(self, Referer, JSESSIONID):
         headers = {
                 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Encoding':'gzip, deflate',
@@ -25,7 +25,7 @@ class CJScrap(object):
                 'Cache-Control':'max-age=0',
                 'Connection':'keep-alive',
                 'Content-Type':'application/x-www-form-urlencoded',
-                'Cookie':'_gscu_750909037=15074682dsiqpt59; JSESSIONID=F9D8CEF536AD5F2A3EDFDA5B90415888',
+                'Cookie':'_gscu_750909037=15074682dsiqpt59; JSESSIONID='+JSESSIONID,
                 'Host':'jwxt.gdufe.edu.cn',
                 'Origin':'http://jwxt.gdufe.edu.cn',
                 'Referer':Referer,
@@ -45,16 +45,24 @@ class CJScrap(object):
                 }
         #登录进入主界面
         loginURL = mainURL + '/jsxsd/xk/LoginToXk'
+        #获取cookie中的JSESSIONID
+        response = s.get(pageURL)
+        set_cookie = response.headers['set-cookie']
+        jsessionid = set_cookie.split(';')[0]
+        jsessionid = jsessionid.split('=')[-1]
+        
+        headers = self.getHeaders(pageURL, jsessionid) 
+        
         response = s.post("http://jwxt.gdufe.edu.cn/jsxsd/xk/LoginToXkLdap", data=loginPostData, headers=headers)
         print response
         
         mainpageURL = pageURL + '/framework/xsMain.jsp'
-        headers = self.getHeaders(mainpageURL)
+        headers = self.getHeaders(mainpageURL, jsessionid)
         scorepageURL = pageURL + '/kscj/cjcx_query?Ves632DSdyV=NEW_XSD_XJCJ'
         mainPAGE = s.get(scorepageURL)
         print mainPAGE
 
-        headers = self.getHeaders(scorepageURL)
+        headers = self.getHeaders(scorepageURL, jsessionid)
         checkFORM = {
                 'kksj':'',
                 'kcxz':'',
